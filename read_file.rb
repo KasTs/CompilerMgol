@@ -154,17 +154,14 @@ def scanner(afd)
 			if afd[estado_atual]["FINAL"] == true
 				token = Token.new(afd[estado_atual]["CLASSE"],lexema,nil)
 				return check_simbol(token)
-				#return "Classe:" + afd[estado_atual]["CLASSE"] + " Lexema:" + lexema + " tipo: nil"
 				
 			else
 				return Token.new("ERRO1",lexema,nil)
-				#return "Classe: ERRO (1), Lexema: " + lexema + " tipo: nil"  
 			end
 		end
 
 		c = @f.readchar
 
-		#leitura de linha e coluna COMEÇANDO NO ZERO.
 		@column+=1
 		if c == "\n"
 			@line+=1
@@ -223,21 +220,17 @@ def scanner(afd)
 		#puts "Tipo char:" + tipo_char
 
 		if tipo_char == "INVALIDO"
-			return Token.new("ERRO2",lexema,nil)
-			#return "Classe: ERRO, Lexema: " + lexema + " tipo: nil" 
+			return Token.new("ERRO1",lexema,nil)
 		end
 
 		if tipo_char == "ESPAÇO_VAZIO"
 			if estado_atual == "Q0"
-				return Token.new(nil,nil,nil)
-				#return "nil, espaço vazio"
+				return nil
 			elsif afd[estado_atual]["FINAL"] == true
 				token = Token.new(afd[estado_atual]["CLASSE"],lexema.chop,nil)
 				return check_simbol(token)
-				#return "Classe:" + afd[estado_atual]["CLASSE"] + " Lexema:" + lexema.chop + " tipo: nil"
 			else
-				return Token.new("ERRO1",lexema.chop,nil)
-				#return "Classe: ERRO (1), Lexema: " + lexema.chop + " tipo: nil"  
+				return Token.new("ERRO2",lexema.chop,nil)
 			end
 		end
 
@@ -247,19 +240,16 @@ def scanner(afd)
 			estado_atual = afd[estado_atual][tipo_char]
 		else
 				if estado_atual == 'Q0'
-					return Token.new("ERRO1",lexema,nil)
-					#return "Classe: ERRO (2), Lexema: " + lexema + " tipo: nil"
+					return Token.new("ERRO2",lexema,nil)
 				elsif afd[estado_atual]["FINAL"] == true
 					@f.seek(-1,IO::SEEK_CUR)
 					@column-=1
 					token = Token.new(afd[estado_atual]["CLASSE"],lexema.chop,nil)
 					return check_simbol(token)
-					#return "Classe:" + afd[estado_atual]["CLASSE"] + " Lexema:" + lexema.chop + " tipo: nil"
 				else
 					@f.seek(-1,IO::SEEK_CUR)
 					@column-=1
 					return Token.new("ERRO2",lexema.chop,nil)
-					#return "Classe: ERRO (2), Lexema: " + lexema.chop + " tipo: nil"
 				end		
 		end
 
@@ -268,9 +258,9 @@ end
 
 def error(num)
 	if num == 1
-		puts "ERRO 1 - Sequencia invalida na linguagem, linha #{@line} e coluna #{@column}"
+		puts "\nERRO 1 - Caractere inválido na linguagem, linha #{@line} e coluna #{@column}"
 	else
-		puts "ERRO 2 - Caractere inválido na linguagem, linha #{@line} e coluna #{@column}"
+		puts "\nERRO 2 - Sequencia invalida na linguagem, linha #{@line} e coluna #{@column}"
 	end
 end
 
@@ -311,11 +301,11 @@ loop do
 
 	token = scanner(afd)
 
-	if token.classe
+	if token
 		puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo"  
 	end
 
-	if token.classe && token.classe.start_with?("ERRO")
+	if token && token.classe.start_with?("ERRO")
 		error(token.classe[-1..-1].to_i)
 	end
 
@@ -326,8 +316,4 @@ loop do
 	end
 
 end
-
-#@tabela_simbolos.each do |position|
-#	puts "\n" + position.to_s 
-#end
 
