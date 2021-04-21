@@ -1,6 +1,6 @@
-require_relative 'afd'
-require_relative 'token_class'
-require_relative 'tabela_simbolos'
+require_relative 'aux/lexico/afd'
+require_relative 'aux/lexico/token_class'
+require_relative 'aux/lexico/tabela_simbolos'
 
 @line = 1
 @column = 0
