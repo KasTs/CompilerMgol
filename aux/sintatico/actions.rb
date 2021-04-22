@@ -1,6 +1,6 @@
-actions = Hash.new
+@actions = Hash.new
 
-actions = {
+@actions = {
 	"0" => {
 		"inicio" => "S2"
 	},

@@ -1,6 +1,9 @@
 require_relative 'aux/lexico/afd'
 require_relative 'aux/lexico/token_class'
 require_relative 'aux/lexico/tabela_simbolos'
+require_relative 'aux/sintatico/actions'
+require_relative 'aux/sintatico/goto'
+require_relative 'aux/sintatico/regras_gramatica'
 
 @line = 1
 @column = 0
@@ -143,23 +146,64 @@ end
 
 @f = File.new("teste.txt")
 
+#todo = tratamento de erro/comentário
+ token = scanner()
+ a = token.classe
+ pilha = ["$","0"]
+
 loop do
 
-	token = scanner()
+	s = pilha.last
 
-	if token
-		puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo"  
-	end
-
-	if token && token.classe.start_with?("ERRO")
-		error(token.classe[-1..-1].to_i)
-	end
-
-	if @f.eof?
-		token = Token.new("EOF","EOF",nil)
-		puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo\n" 
+	if !@actions[s][a]
+		puts "booo, deu erro!"
 		break
-	end
+	elsif @actions[s][a].start_with?("S")
+		#empilha t na pilha
+		t = @actions[s][a].delete_prefix("S")		
+		pilha.push(t)
+		#seja a o próximo símbolo da entrada
+		token = scanner()
+		a = token.classe
 
+		puts "SHIFT" + t
+		puts "PILHA: " + pilha.to_s
+	elsif @actions[s][a].start_with?("R")		
+		num_regra = @actions[s][a].delete_prefix("R")
+		regra = @gram[num_regra.to_i]
+		
+		#desempilha |b| simbolos
+		tam_beta = regra.split("→")[1].split(" ").size
+		pilha.pop(tam_beta)
+
+		t = pilha.last
+		alpha = regra.split("→")[0]
+		puts t
+		puts alpha
+		pilha.push(@goto[t][alpha])
+
+		puts "REDUCE " + num_regra
+		puts "PILHA: " + pilha.to_s
+		puts regra
+	elsif @actions[s][a] == "ACC"
+		puts "Análise finalizada!"
+		break		
+	end
 end
+
+
+#	if token
+#		puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo"  
+#	end
+
+#	if token && token.classe.start_with?("ERRO")
+#		error(token.classe[-1..-1].to_i)
+#	end
+
+#	if @f.eof?
+#		token = Token.new("EOF","EOF",nil)
+#		puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo\n" 
+#		break
+#	end
+
 

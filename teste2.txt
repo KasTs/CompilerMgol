@@ -1,0 +1,6 @@
+inicio
+varinicio
+A lit;
+varfim;
+escreva A;
+fim

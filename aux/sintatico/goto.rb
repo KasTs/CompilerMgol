@@ -1,6 +1,6 @@
-goto = Hash.new
+@goto = Hash.new
 
-goto = {
+@goto = {
 	"0" => {
 		"P" => "1"
 	},
