@@ -1,6 +1,3 @@
-inicio
-varinicio
-A lit;
-varfim;
-escreva A;
-fim
+inicio varinicio
+aux lit;
+varfim; fim

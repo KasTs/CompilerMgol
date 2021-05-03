@@ -124,9 +124,9 @@ end
 
 def error(num)
 	if num == 1
-		puts "\nERRO 1 - Caractere inválido na linguagem, linha #{@line} e coluna #{@column}"
+		puts "\nERRO SINTÁTICO 1 - Caractere inválido na linguagem, linha #{@line} e coluna #{@column}"
 	else
-		puts "\nERRO 2 - Sequencia invalida na linguagem, linha #{@line} e coluna #{@column}"
+		puts "\nERRO SINTÁTICO 2 - Sequencia invalida na linguagem, linha #{@line} e coluna #{@column}"
 	end
 end
 
@@ -150,43 +150,65 @@ end
  token = scanner()
  a = token.classe
  pilha = ["$","0"]
+ regras_sequencia = []
 
 loop do
 
 	s = pilha.last
 
+	#puts "-----------"
+
 	if !@actions[s][a]
+		puts "ACTION[#{s},#{a}] não existe!"
 		puts "booo, deu erro!"
 		break
 	elsif @actions[s][a].start_with?("S")
 		#empilha t na pilha
 		t = @actions[s][a].delete_prefix("S")		
 		pilha.push(t)
+		#puts "Token atual: #{a}"
+		#puts "ACTION[#{s},#{a}] = SHIFT #{t}"
+		#puts "Empilhando #{t}"
 		#seja a o próximo símbolo da entrada
-		token = scanner()
-		a = token.classe
 
-		puts "SHIFT" + t
-		puts "PILHA: " + pilha.to_s
+		if @f.eof?
+			a = "$"
+		else 
+			token = scanner()
+			a = token.classe
+		end
+
+		#puts "PILHA: " + pilha.to_s
+		#puts "Token lido: #{a}"
+		#puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo"
 	elsif @actions[s][a].start_with?("R")		
 		num_regra = @actions[s][a].delete_prefix("R")
 		regra = @gram[num_regra.to_i]
-		
+
+		regras_sequencia.push(regra)
+
 		#desempilha |b| simbolos
 		tam_beta = regra.split("→")[1].split(" ").size
 		pilha.pop(tam_beta)
 
 		t = pilha.last
 		alpha = regra.split("→")[0]
-		puts t
-		puts alpha
 		pilha.push(@goto[t][alpha])
 
-		puts "REDUCE " + num_regra
-		puts "PILHA: " + pilha.to_s
+
+		#puts "ACTION[#{s},#{a}] = REDUCE #{num_regra}"
+		#puts "Regra: #{regra}"
 		puts regra
+		#puts "Desempilhando #{tam_beta.to_s} simbolos"
+		#puts "Topo da pilha: #{t}"
+		#puts "Empilhando GOTO[#{t},#{alpha}] = #{@goto[t][alpha]}"
+		#puts "PILHA: " + pilha.to_s
 	elsif @actions[s][a] == "ACC"
-		puts "Análise finalizada!"
+		#puts "ACTION[#{s},#{a}] = ACC"
+		#puts "Análise finalizada!"
+		#regras_sequencia.push("P' -> P")
+		#puts regras_sequencia
+		puts "P' -> P"
 		break		
 	end
 end
@@ -198,6 +220,7 @@ end
 
 #	if token && token.classe.start_with?("ERRO")
 #		error(token.classe[-1..-1].to_i)
+# puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo"  
 #	end
 
 #	if @f.eof?

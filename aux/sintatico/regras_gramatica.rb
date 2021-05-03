@@ -2,7 +2,7 @@
 "",
 "P'→ P",
 "P→ inicio V A",
-"V→ varincio LV",
+"V→ varinicio LV",
 "LV→ D LV",
 "LV→ varfim ;",
 "D→ L TIPO ;",

@@ -23,7 +23,7 @@
 		"DIGITO" => "Q1",
 		"." => "Q2",
 		"FINAL" => true,
-		"CLASSE" => "Num"
+		"CLASSE" => "num"
 	},
 	"Q2" => {
 		"DIGITO" => "Q3",
@@ -33,7 +33,7 @@
 		"DIGITO" => "Q3",
 		"Ee" => "Q4",
 		"FINAL" => true,
-		"CLASSE" => "Num"
+		"CLASSE" => "num"
 	},
 	"Q4" => {
 		"DIGITO" => "Q5",
@@ -43,7 +43,7 @@
 	},
 	"Q5" => {
 		"FINAL" => true,
-		"CLASSE" => "Num"
+		"CLASSE" => "num"
 	},
 	"Q6" => {
 		"DIGITO" => "Q5",
@@ -62,7 +62,7 @@
 	},
 	"Q9" => {
 		"FINAL" => true,
-		"CLASSE" => "Literal"
+		"CLASSE" => "lit"
 	},
 	"Q10" => {
 		"}" => "Q11",
