@@ -3,7 +3,7 @@ varinicio
 A lit;
 B inteiro;
 D inteiro;
-C real;
+C inteiro;
 varfim;
 escreva "Digite B";
 leia B;
