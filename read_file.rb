@@ -1,148 +1,14 @@
-afd = Hash.new
-
-afd = {
-	"Q0" => { 
-		"LETRA" => "Q7",
-		"DIGITO" => "Q1",
-		"ASPAS" => "Q8",
-		"+" => "Q19",
-		"-" => "Q19",
-		"*" => "Q19",
-		"/" => "Q19",
-		"<" => "Q13",
-		">" => "Q16",
-		"=" => "Q12",
-		"(" => "Q20",
-		")" => "Q21",
-		";" => "Q22",
-		"," => "Q23",
-		"{" => "Q10",
-		"FINAL" => false,
-	},
-	"Q1" => {
-		"DIGITO" => "Q1",
-		"." => "Q2",
-		"FINAL" => true,
-		"CLASSE" => "Num"
-	},
-	"Q2" => {
-		"DIGITO" => "Q3",
-		"FINAL" => false
-	},
-	"Q3" => {
-		"DIGITO" => "Q3",
-		"Ee" => "Q4",
-		"FINAL" => true,
-		"CLASSE" => "Num"
-	},
-	"Q4" => {
-		"DIGITO" => "Q5",
-		"+" => "Q6",
-		"-" => "Q6",
-		"FINAL" => false,
-	},
-	"Q5" => {
-		"FINAL" => true,
-		"CLASSE" => "Num"
-	},
-	"Q6" => {
-		"DIGITO" => "Q5",
-		"FINAL" => false
-	},
-	"Q7" => {
-		"LETRA" => "Q7",
-		"DIGITO" => "Q7",
-		"_" => "Q7",
-		"FINAL" => true,
-		"CLASSE" => "id"
-	},
-	"Q8" => {
-		"ASPAS" => "Q9",
-		"FINAL" => false
-	},
-	"Q9" => {
-		"FINAL" => true,
-		"CLASSE" => "Literal"
-	},
-	"Q10" => {
-		"}" => "Q11",
-		"FINAL" => false
-	},
-	"Q11" => {
-		"FINAL" => true,
-		"CLASSE" => "Comentário"
-	},
-	"Q12" => {
-		"FINAL" => true,
-		"CLASSE" => "OPR"
-	},
-	"Q13" => {
-		">" => "Q15",
-		"=" => "Q15",
-		"-" => "Q14",
-		"FINAL" => true,
-		"CLASSE" => "OPR"
-	},
-	"Q14" => {
-		"FINAL" => true,
-		"CLASSE" => "RCB"
-	},
-	"Q15" => {
-		"FINAL" => true,
-		"CLASSE" => "OPR"
-	},
-	"Q16" => {
-		"=" => "Q17",
-		"FINAL" => true,
-		"CLASSE" => "OPR"
-	},
-	"Q17" => {
-		"FINAL" => true,
-		"CLASSE" => "OPR"
-	},
-	"Q18" => {
-		"FINAL" => true,
-		"CLASSE" => "EOF"
-	},
-	"Q19" => {
-		"FINAL" => true,
-		"CLASSE" => "OPM"
-	},
-	"Q20" => {
-		"FINAL" => true,
-		"CLASSE" => "AB_P"		
-	},
-	"Q21" => {
-		"FINAL" => true,
-		"CLASSE" => "FC_P"	
-	},
-	"Q22" => {
-		"FINAL" => true,
-		"CLASSE" => "PT_V"
-	},
-	"Q23" => {
-		"FINAL" => true,
-		"CLASSE" => "VIR"
-	}
-}
+require_relative 'aux/lexico/afd'
+require_relative 'aux/lexico/token_class'
+require_relative 'aux/lexico/tabela_simbolos'
+require_relative 'aux/sintatico/actions'
+require_relative 'aux/sintatico/goto'
+require_relative 'aux/sintatico/regras_gramatica'
 
 @line = 1
 @column = 0
 
-class Token
-
-	def initialize(classe,lexema,tipo)
-		@classe = classe
-		@lexema = lexema
-		@tipo = tipo
-	end
-
-	attr_reader :classe
-	attr_reader :lexema
-	attr_reader :tipo
-end
-
-def scanner(afd)
+def scanner()
 
 	estado_atual = "Q0"
 	lexema = ''
@@ -151,8 +17,8 @@ def scanner(afd)
 
 		#se chegou ao final do arquivo, confere se estava lendo um lexema válido no momento
 		if @f.eof?
-			if afd[estado_atual]["FINAL"] == true
-				token = Token.new(afd[estado_atual]["CLASSE"],lexema,nil)
+			if @afd[estado_atual]["FINAL"] == true
+				token = Token.new(@afd[estado_atual]["CLASSE"],lexema,nil)
 				return check_simbol(token)
 				
 			else
@@ -226,8 +92,8 @@ def scanner(afd)
 		if tipo_char == "ESPAÇO_VAZIO"
 			if estado_atual == "Q0"
 				return nil
-			elsif afd[estado_atual]["FINAL"] == true
-				token = Token.new(afd[estado_atual]["CLASSE"],lexema.chop,nil)
+			elsif @afd[estado_atual]["FINAL"] == true
+				token = Token.new(@afd[estado_atual]["CLASSE"],lexema.chop,nil)
 				return check_simbol(token)
 			else
 				return Token.new("ERRO2",lexema.chop,nil)
@@ -235,16 +101,16 @@ def scanner(afd)
 		end
 
 		#se houver uma transição pro caractere lido...
-		if afd[estado_atual][tipo_char]
+		if @afd[estado_atual][tipo_char]
 			#puts "Transição: " + estado_atual + "=>" + afd[estado_atual][tipo_char]
-			estado_atual = afd[estado_atual][tipo_char]
+			estado_atual = @afd[estado_atual][tipo_char]
 		else
 				if estado_atual == 'Q0'
 					return Token.new("ERRO2",lexema,nil)
-				elsif afd[estado_atual]["FINAL"] == true
+				elsif @afd[estado_atual]["FINAL"] == true
 					@f.seek(-1,IO::SEEK_CUR)
 					@column-=1
-					token = Token.new(afd[estado_atual]["CLASSE"],lexema.chop,nil)
+					token = Token.new(@afd[estado_atual]["CLASSE"],lexema.chop,nil)
 					return check_simbol(token)
 				else
 					@f.seek(-1,IO::SEEK_CUR)
@@ -258,9 +124,9 @@ end
 
 def error(num)
 	if num == 1
-		puts "\nERRO 1 - Caractere inválido na linguagem, linha #{@line} e coluna #{@column}"
+		puts "\nErro léxico 1 - Caractere inválido na linguagem, linha #{@line} e coluna #{@column}"
 	else
-		puts "\nERRO 2 - Sequencia invalida na linguagem, linha #{@line} e coluna #{@column}"
+		puts "\nErro léxico 2 - Sequencia invalida na linguagem, linha #{@line} e coluna #{@column}"
 	end
 end
 
@@ -278,42 +144,73 @@ def check_simbol(token)
 	end	
 end
 
-
 @f = File.new("teste.txt")
 
-@tabela_simbolos = Array.new
-
-@tabela_simbolos.push(Token.new("inicio","inicio",nil))
-@tabela_simbolos.push(Token.new("varinicio","varinicio",nil))
-@tabela_simbolos.push(Token.new("varfim","varfim",nil))
-@tabela_simbolos.push(Token.new("escreva","escreva",nil))
-@tabela_simbolos.push(Token.new("leia","leia",nil))
-@tabela_simbolos.push(Token.new("se","se",nil))
-@tabela_simbolos.push(Token.new("entao","entao",nil))
-@tabela_simbolos.push(Token.new("fimse","fimse",nil))
-@tabela_simbolos.push(Token.new("faca-ate","faca-ate",nil))
-@tabela_simbolos.push(Token.new("fimfaca","inicio",nil))
-@tabela_simbolos.push(Token.new("inteiro","inteiro",nil))
-@tabela_simbolos.push(Token.new("lit","lit",nil))
-@tabela_simbolos.push(Token.new("real","real",nil))
+ token = scanner()
+ a = token.classe
+ pilha = ["$","0"]
 
 loop do
 
-	token = scanner(afd)
+	s = pilha.last
 
-	if token
-		puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo"  
+	#tratamento de erro: modo pânico
+	if !@actions[s][a]
+
+		puts "Erro de sintaxe - token inesperado: \"#{token.lexema}\" na linha #{@line}, coluna #{@column}. Tokens esperados: #{@actions[s].keys}" 
+
+		while !@actions[s][a] do
+			if @f.eof?
+				exit
+			else 
+				token = scanner()
+				a = token.classe
+			end
+		end
+
+	elsif @actions[s][a].start_with?("S")
+		#empilha t na pilha
+		t = @actions[s][a].delete_prefix("S")		
+		pilha.push(t)
+
+		#lê o próximo token válido
+		loop do
+
+			if @f.eof?
+				a = "$"
+			else 
+				token = scanner()
+				if token
+					a = token.classe
+				end
+
+				if token && token.classe.start_with?("ERRO")
+					error(token.classe[-1..-1].to_i)
+				end
+			end
+
+			valid_token = !( !token || token.classe == "Comentário" || token.classe.start_with?("ERRO"))
+
+			break if valid_token
+		end
+
+	elsif @actions[s][a].start_with?("R")		
+		num_regra = @actions[s][a].delete_prefix("R")
+		regra = @gram[num_regra.to_i]
+
+		#desempilha |b| simbolos
+		tam_beta = regra.split("→")[1].split(" ").size
+		pilha.pop(tam_beta)
+
+		#empilha GOTO[t][A]
+		t = pilha.last
+		alpha = regra.split("→")[0]
+		pilha.push(@goto[t][alpha])
+
+		puts regra
+
+	elsif @actions[s][a] == "ACC"
+		puts "P' -> P"
+		break		
 	end
-
-	if token && token.classe.start_with?("ERRO")
-		error(token.classe[-1..-1].to_i)
-	end
-
-	if @f.eof?
-		token = Token.new("EOF","EOF",nil)
-		puts "\nClasse: " + token.classe + " Lexema: " + token.lexema + " Tipo: Nulo\n" 
-		break
-	end
-
 end
-
