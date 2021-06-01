@@ -1,3 +1,0 @@
-inicio varinicio
-aux lit;
-varfim; fim
