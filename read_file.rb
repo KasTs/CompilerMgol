@@ -144,10 +144,26 @@ def check_simbol(token)
 	end	
 end
 
+def write_file()
+
+	arquivo = File.new("programa.c", "w")
+	arquivo.puts("#include<stdio.h>")
+	arquivo.puts("typedef char literal[256];")
+	arquivo.puts("void main(void) \n{")
+	arquivo.puts("/*----Variaveis temporarias----*/")
+	#imprimir var temporárias aqui
+	arquivo.puts("/*------------------------------*/")
+	#imprimir o resto do arquivo
+	arquivo.puts("}")
+	arquivo.close()
+end
+
 @f = File.new("teste.txt")
+@erro_semantico = false
 
  token = scanner()
  a = token.classe
+ puts "token lido:" + token.classe + " - " + token.lexema 
  pilha = ["$","0"]
 
 loop do
@@ -169,6 +185,8 @@ loop do
 		end
 
 	elsif @actions[s][a].start_with?("S")
+
+		puts "actions["+s+"]["+a+"] = " + @actions[s][a]
 		#empilha t na pilha
 		t = @actions[s][a].delete_prefix("S")		
 		pilha.push(t)
@@ -191,10 +209,17 @@ loop do
 
 			valid_token = !( !token || token.classe == "Comentário" || token.classe.start_with?("ERRO"))
 
+			if valid_token
+				puts "token lido:" + token.classe + " - " + token.lexema 
+			end
+
 			break if valid_token
 		end
 
-	elsif @actions[s][a].start_with?("R")		
+		puts "Pilha sintática:" + pilha.to_s
+
+	elsif @actions[s][a].start_with?("R")
+		puts "actions["+s+"]["+a+"] = " + @actions[s][a]	
 		num_regra = @actions[s][a].delete_prefix("R")
 		regra = @gram[num_regra.to_i]
 
@@ -207,10 +232,17 @@ loop do
 		alpha = regra.split("→")[0]
 		pilha.push(@goto[t][alpha])
 
+		puts "goto["+t+"]["+alpha+"] = " + @goto[t][alpha]
+
 		puts regra
+
+		puts "Pilha sintática:" + pilha.to_s
 
 	elsif @actions[s][a] == "ACC"
 		puts "P' -> P"
 		break		
 	end
+	puts "------------"
 end
+
+write_file

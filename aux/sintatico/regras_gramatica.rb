@@ -5,7 +5,7 @@
 "V→ varinicio LV",
 "LV→ D LV",
 "LV→ varfim ;",
-"D→ L TIPO ;",
+"D→ TIPO L ;",
 "L→ id , L",
 "L→ id",
 "TIPO→ int",
