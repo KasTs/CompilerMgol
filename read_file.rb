@@ -1,174 +1,38 @@
 require_relative 'aux/lexico/afd'
 require_relative 'aux/lexico/token_class'
 require_relative 'aux/lexico/tabela_simbolos'
+require_relative 'aux/lexico/analise_lexica'
 require_relative 'aux/sintatico/actions'
 require_relative 'aux/sintatico/goto'
 require_relative 'aux/sintatico/regras_gramatica'
+require_relative 'aux/semantico/analise_semantica'
 
 @line = 1
 @column = 0
 
-def scanner()
-
-	estado_atual = "Q0"
-	lexema = ''
-
-	loop do
-
-		#se chegou ao final do arquivo, confere se estava lendo um lexema válido no momento
-		if @f.eof?
-			if @afd[estado_atual]["FINAL"] == true
-				token = Token.new(@afd[estado_atual]["CLASSE"],lexema,nil)
-				return check_simbol(token)
-				
-			else
-				return Token.new("ERRO1",lexema,nil)
-			end
-		end
-
-		c = @f.readchar
-
-		@column+=1
-		if c == "\n"
-			@line+=1
-			@column = 0
-		end
-
-		#puts "Caractere lido: " + c
-		lexema += c
-
-		#ignora se for caractere dentro de comentário ou literal
-		redo if estado_atual == "Q8" and c != "\""
-		redo if estado_atual == "Q10" and c != '}'
-
-		if estado_atual == 'Q3' and (c == 'e' or c == 'E')
-			tipo_char = "Ee"
-		elsif (c.ord >= 65 && c.ord <=90) or (c.ord >= 97 and c.ord <=122)
-			tipo_char = "LETRA"
-		elsif c.ord >= 48 and c.ord <= 57
-			tipo_char = "DIGITO"
-		elsif c == "\""
-			tipo_char = "ASPAS"
-		elsif c == "."
-			tipo_char = "."
-		elsif c == "+"
-			tipo_char = "+"
-		elsif c == "-"
-			tipo_char = "-"
-		elsif c == "*"
-			tipo_char = "*"
-		elsif c == "/"
-			tipo_char = "/"
-		elsif c == "<"
-			tipo_char = "<"
-		elsif c == ">"
-			tipo_char = ">"
-		elsif c == "="
-			tipo_char = "="
-		elsif c == "("
-			tipo_char = "("
-		elsif c == ")"
-			tipo_char = ")"
-		elsif c == ";"
-			tipo_char = ";"
-		elsif c == ","
-			tipo_char = ","
-		elsif c == "{"
-			tipo_char = "{"
-		elsif c == "}"
-			tipo_char = "}"
-		elsif c == "\n" or c== " " or c== "\r"  or c== "\f"  or c== "\v" or c== "\t"
-			tipo_char = "ESPAÇO_VAZIO"
-		else 
-			tipo_char = "INVALIDO"
-		end
-
-		#puts "Tipo char:" + tipo_char
-
-		if tipo_char == "INVALIDO"
-			return Token.new("ERRO1",lexema,nil)
-		end
-
-		if tipo_char == "ESPAÇO_VAZIO"
-			if estado_atual == "Q0"
-				return nil
-			elsif @afd[estado_atual]["FINAL"] == true
-				token = Token.new(@afd[estado_atual]["CLASSE"],lexema.chop,nil)
-				return check_simbol(token)
-			else
-				return Token.new("ERRO2",lexema.chop,nil)
-			end
-		end
-
-		#se houver uma transição pro caractere lido...
-		if @afd[estado_atual][tipo_char]
-			#puts "Transição: " + estado_atual + "=>" + afd[estado_atual][tipo_char]
-			estado_atual = @afd[estado_atual][tipo_char]
-		else
-				if estado_atual == 'Q0'
-					return Token.new("ERRO2",lexema,nil)
-				elsif @afd[estado_atual]["FINAL"] == true
-					@f.seek(-1,IO::SEEK_CUR)
-					@column-=1
-					token = Token.new(@afd[estado_atual]["CLASSE"],lexema.chop,nil)
-					return check_simbol(token)
-				else
-					@f.seek(-1,IO::SEEK_CUR)
-					@column-=1
-					return Token.new("ERRO2",lexema.chop,nil)
-				end		
-		end
-
+def print_semantica(pilha_semantica)
+	pilha_semantica.each do |token|
+		tipo = token.tipo ? token.tipo : 'nil'
+		puts "Classe: "+token.classe+"\t Lexema: " + token.lexema + "\t Tipo: " + tipo
 	end
 end
 
-def error(num)
-	if num == 1
-		puts "\nErro léxico 1 - Caractere inválido na linguagem, linha #{@line} e coluna #{@column}"
-	else
-		puts "\nErro léxico 2 - Sequencia invalida na linguagem, linha #{@line} e coluna #{@column}"
-	end
-end
-
-def check_simbol(token)
-	if token.classe == "id"
-		@tabela_simbolos.each do |registro_ts|
-			if token.lexema == registro_ts.lexema
-				return registro_ts
-			end
-		end
-		@tabela_simbolos.push(token)
-		return token
-	else 
-		return token
-	end	
-end
-
-def write_file()
-
-	arquivo = File.new("programa.c", "w")
-	arquivo.puts("#include<stdio.h>")
-	arquivo.puts("typedef char literal[256];")
-	arquivo.puts("void main(void) \n{")
-	arquivo.puts("/*----Variaveis temporarias----*/")
-	#imprimir var temporárias aqui
-	arquivo.puts("/*------------------------------*/")
-	#imprimir o resto do arquivo
-	arquivo.puts("}")
-	arquivo.close()
-end
-
-@f = File.new("teste.txt")
+@f = File.new("teste2.txt")
 @erro_semantico = false
+@texto_programa = []
 
- token = scanner()
- a = token.classe
- puts "token lido:" + token.classe + " - " + token.lexema 
- pilha = ["$","0"]
+token = scanner()
+a = token.classe
+puts "token lido:" + token.classe + " - " + token.lexema 
+pilha_sintatica = ["$","0"]
+pilha_semantica = []
+ps = []
+#pilha_semantica.push(token)
+#ps.push(a)
 
 loop do
 
-	s = pilha.last
+	s = pilha_sintatica.last
 
 	#tratamento de erro: modo pânico
 	if !@actions[s][a]
@@ -183,13 +47,28 @@ loop do
 				a = token.classe
 			end
 		end
-
+		
+		pilha_semantica.push(token)
+		ps.push(a)
+		
 	elsif @actions[s][a].start_with?("S")
-
-		puts "actions["+s+"]["+a+"] = " + @actions[s][a]
-		#empilha t na pilha
+		
+		#puts "actions["+s+"]["+a+"] = " + @actions[s][a]
+		#empilha t na pilha sintatica
 		t = @actions[s][a].delete_prefix("S")		
-		pilha.push(t)
+		pilha_sintatica.push(t)
+
+		pilha_semantica.push(token)
+		ps.push(a)
+
+		if t == '20'
+			#sequencia: TIPO,id
+			#puts pilha_semantica[-1].classe
+			#puts pilha_semantica[-2].classe
+			pilha_semantica[-1].tipo = pilha_semantica[-2].tipo
+			#puts pilha_semantica[-1].tipo
+			#puts pilha_semantica[-2].tipo
+		end
 
 		#lê o próximo token válido
 		loop do
@@ -209,14 +88,15 @@ loop do
 
 			valid_token = !( !token || token.classe == "Comentário" || token.classe.start_with?("ERRO"))
 
-			if valid_token
-				puts "token lido:" + token.classe + " - " + token.lexema 
-			end
+			#if valid_token
+			#	puts "token lido:" + token.classe + " - " + token.lexema
+			#end
 
 			break if valid_token
 		end
 
-		puts "Pilha sintática:" + pilha.to_s
+		#puts "pilha sintática:" + pilha_sintatica.to_s
+		#puts "pilha semantica:" + ps.to_s
 
 	elsif @actions[s][a].start_with?("R")
 		puts "actions["+s+"]["+a+"] = " + @actions[s][a]	
@@ -225,18 +105,29 @@ loop do
 
 		#desempilha |b| simbolos
 		tam_beta = regra.split("→")[1].split(" ").size
-		pilha.pop(tam_beta)
-
+		pilha_sintatica.pop(tam_beta)
+		
 		#empilha GOTO[t][A]
-		t = pilha.last
+		t = pilha_sintatica.last
 		alpha = regra.split("→")[0]
-		pilha.push(@goto[t][alpha])
-
+		pilha_sintatica.push(@goto[t][alpha])
+		
 		puts "goto["+t+"]["+alpha+"] = " + @goto[t][alpha]
-
+		
 		puts regra
-
-		puts "Pilha sintática:" + pilha.to_s
+		
+		puts "pilha sintática:" + pilha_sintatica.to_s
+		puts "pilha semantica:" + ps.to_s
+		
+		#ANALISADOR SEMÂNTICO
+		beta = pilha_semantica.pop(tam_beta)
+		ps.pop(tam_beta)
+		#analise_semantica retorna o novo topo da pilha semantica - isto é, o símbolo que foi reduzido
+		novo_topo_ps =  analisador_semantico(num_regra,alpha,beta)
+		pilha_semantica.push(novo_topo_ps)
+		ps.push(novo_topo_ps.classe)
+		
+		puts "pilha semantica apos a reducao:" + ps.to_s
 
 	elsif @actions[s][a] == "ACC"
 		puts "P' -> P"
@@ -245,4 +136,4 @@ loop do
 	puts "------------"
 end
 
-write_file
+write_file()

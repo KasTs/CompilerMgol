@@ -6,7 +6,7 @@ class Token
 		@tipo = tipo
 	end
 
-	attr_reader :classe
-	attr_reader :lexema
-	attr_reader :tipo
+	attr_accessor :classe
+	attr_accessor :lexema
+	attr_accessor :tipo
 end

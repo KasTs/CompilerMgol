@@ -1,0 +1,8 @@
+inicio
+varinicio
+real B;
+varfim;
+
+B <- B +1.0;
+
+fim
