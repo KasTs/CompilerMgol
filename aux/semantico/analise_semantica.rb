@@ -1,6 +1,6 @@
 def write_file()
 
-    if (!@erro_semantico)
+    if (!@erro_analise)
         arquivo = File.new("programa.c", "w")
         arquivo.puts("#include<stdio.h>")
         arquivo.puts("typedef char literal[256];")
@@ -33,11 +33,17 @@ def analisador_semantico(num_regra,alpha,beta)
 
     topo_semantica = Token.new(alpha,alpha,nil)
 
-    #faltam as regras 6,7,8
+    #faltam as regras 7,8
 
     #LV -> varfim;
     if num_regra == '5'
         @texto_programa.append("\n\n\n")
+    #D -> TIPO L ;
+    elsif num_regra == '6'
+        @texto_programa.push(";")
+    #L -> id
+    elsif num_regra == '8'
+        @texto_programa.push(beta[0].lexema)
     #TIPO -> int
     elsif num_regra == '9'
         topo_semantica.tipo = 'inteiro'
@@ -56,7 +62,7 @@ def analisador_semantico(num_regra,alpha,beta)
         #se não houver tipo no ID, significa que não foi declarado
         if !beta[1].tipo
             puts "Erro: variável não declarada na linha #{@line-1} e coluna #{@column}." 
-            @erro_semantico = true
+            @erro_analise = true
         elsif beta[1].tipo == "literal"
             @texto_programa.push("scanf(“%s”, #{beta[1].lexema});")
         elsif beta[1].tipo == "int"
@@ -81,7 +87,7 @@ def analisador_semantico(num_regra,alpha,beta)
     elsif num_regra == '17'
         if !beta[0].tipo
             puts "Erro: variável não declarada na linha #{@line-1} e coluna #{@column}." 
-            @erro_semantico = true
+            @erro_analise = true
         else
             topo_semantica.classe = beta[0].classe
             topo_semantica.lexema = beta[0].lexema
@@ -91,13 +97,13 @@ def analisador_semantico(num_regra,alpha,beta)
     elsif num_regra == '19'
         if !beta[0].tipo
             puts "Erro: variável não declarada na linha #{@line-1} e coluna #{@column}." 
-            @erro_semantico = true
+            @erro_analise = true
         else
             if beta[0].tipo != beta[2].tipo
                 puts beta[0].tipo.to_s
                 puts beta[2].tipo.to_s
                 puts "Erro: tipos diferentes para atribuição na linha #{@line-1} e coluna #{@column}."
-                @erro_semantico = true
+                @erro_analise = true
             else
                 @texto_programa.push(beta[0].lexema + "=" + beta[2].lexema)
             end
@@ -114,7 +120,7 @@ def analisador_semantico(num_regra,alpha,beta)
             @contador_tx+=1
         else
             puts "Erro: operandos com tipos incompativeis na linha #{@line-1} e coluna #{@column}"
-            @erro_semantico = true
+            @erro_analise = true
         end
     #LD -> OPRD
     elsif num_regra == '21'
@@ -125,7 +131,7 @@ def analisador_semantico(num_regra,alpha,beta)
     elsif num_regra == '22'
         if !beta[0].tipo
             puts "Erro: variável não declarada na linha #{@line-1} e coluna #{@column}." 
-            @erro_semantico = true
+            @erro_analise = true
         else
             topo_semantica.classe = beta[0].classe
             topo_semantica.lexema = beta[0].lexema
@@ -156,6 +162,20 @@ def analisador_semantico(num_regra,alpha,beta)
     elsif num_regra == '26'
         exp_r = beta[2].lexema
         @texto_programa.push("if(#{exp_r}){")
+    #EXP_R -> OPRD opr OPRD
+    elsif num_regra == '27'
+        if beta[0].tipo == beta[2].tipo
+            topo_semantica.lexema = "T"+ @contador_tx.to_s
+            @texto_programa.push(topo_semantica.lexema + "=" + beta[0].lexema + beta[1].lexema + beta[2].lexema)
+        else
+            puts "Erro: Operandos com tipos incompativeis na linha #{@line-1} e coluna #{@column}"
+        end
+    #R -> facaAte ( EXP_R ) CP_R
+    elsif num_regra == '33'
+        exp_r = beta[2].lexema
+        @texto_programa.push("while(#{exp_r}){")
+    elsif num_regra == '37'
+        @texto_programa.push("}")
     end
 
     return topo_semantica

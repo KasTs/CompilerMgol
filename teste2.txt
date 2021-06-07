@@ -1,8 +1,7 @@
 inicio
 varinicio
-real B;
+inteiro B;
+lit A;
 varfim;
-
-B <- B +1.0;
 
 fim

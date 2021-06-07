@@ -4,10 +4,13 @@ void main(void)
 {
 /*----Variaveis temporarias----*/
 /*------------------------------*/
-real
+inteiro
+B
+;
+literal
+A
+;
 
 
 
-T0=B+1.0
-B=T0
 }

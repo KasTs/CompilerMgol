@@ -18,7 +18,7 @@ def print_semantica(pilha_semantica)
 end
 
 @f = File.new("teste2.txt")
-@erro_semantico = false
+@erro_analise = false
 @texto_programa = []
 
 token = scanner()
@@ -27,8 +27,6 @@ puts "token lido:" + token.classe + " - " + token.lexema
 pilha_sintatica = ["$","0"]
 pilha_semantica = []
 ps = []
-#pilha_semantica.push(token)
-#ps.push(a)
 
 loop do
 
@@ -36,7 +34,7 @@ loop do
 
 	#tratamento de erro: modo pânico
 	if !@actions[s][a]
-
+		@erro_analise = true
 		puts "Erro de sintaxe - token inesperado: \"#{token.lexema}\" na linha #{@line}, coluna #{@column}. Tokens esperados: #{@actions[s].keys}" 
 
 		while !@actions[s][a] do

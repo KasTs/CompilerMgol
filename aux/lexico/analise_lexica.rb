@@ -113,6 +113,7 @@ def scanner()
 end
 
 def error(num)
+	@erro_analise = true
 	if num == 1
 		puts "\nErro léxico 1 - Caractere inválido na linguagem, linha #{@line} e coluna #{@column}"
 	else
