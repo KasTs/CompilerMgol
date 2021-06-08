@@ -1,3 +1,7 @@
-inicio varinicio
-aux lit;
-varfim; fim
+inicio
+varinicio
+inteiro B;
+lit A;
+varfim;
+
+fim
