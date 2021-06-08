@@ -10,16 +10,10 @@ require_relative 'aux/semantico/analise_semantica'
 @line = 1
 @column = 0
 
-def print_semantica(pilha_semantica)
-	pilha_semantica.each do |token|
-		tipo = token.tipo ? token.tipo : 'nil'
-		puts "Classe: "+token.classe+"\t Lexema: " + token.lexema + "\t Tipo: " + tipo
-	end
-end
-
-@f = File.new("teste2.txt")
+@f = File.new("teste.txt")
 @erro_analise = false
 @texto_programa = []
+@variaveis_temporarias = []
 
 token = scanner()
 a = token.classe
@@ -48,7 +42,7 @@ loop do
 		
 		pilha_semantica.push(token)
 		ps.push(a)
-		
+	#shift
 	elsif @actions[s][a].start_with?("S")
 		
 		#puts "actions["+s+"]["+a+"] = " + @actions[s][a]
@@ -60,12 +54,11 @@ loop do
 		ps.push(a)
 
 		if t == '20'
-			#sequencia: TIPO,id
-			#puts pilha_semantica[-1].classe
-			#puts pilha_semantica[-2].classe
-			pilha_semantica[-1].tipo = pilha_semantica[-2].tipo
-			#puts pilha_semantica[-1].tipo
-			#puts pilha_semantica[-2].tipo
+			#sequencia na pilha: TIPO,id
+			#Ajustar a passagem do atributo de TIPO.tipo para o atributo tipo dos id(s)
+			tipo = pilha_semantica[-1]
+			id = pilha_semantica[-2]
+			tipo.tipo = id.tipo
 		end
 
 		#lê o próximo token válido
@@ -96,6 +89,7 @@ loop do
 		#puts "pilha sintática:" + pilha_sintatica.to_s
 		#puts "pilha semantica:" + ps.to_s
 
+	#redução
 	elsif @actions[s][a].start_with?("R")
 		puts "actions["+s+"]["+a+"] = " + @actions[s][a]	
 		num_regra = @actions[s][a].delete_prefix("R")
@@ -114,7 +108,7 @@ loop do
 		
 		puts regra
 		
-		puts "pilha sintática:" + pilha_sintatica.to_s
+		#puts "pilha sintática:" + pilha_sintatica.to_s
 		puts "pilha semantica:" + ps.to_s
 		
 		#ANALISADOR SEMÂNTICO
